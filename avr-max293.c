@@ -12,19 +12,10 @@
 #include <util/delay.h>
 #include <stdio.h>
 
-void startFan(void);
-
-void startFan() {
-    uint16_t i;
-    OCR0A = 0x00;
-    for (i = 0; i < 400; i++) {
-	_delay_ms(25);
-    }
-}
-
 ISR(SIG_ADC) {
-    OCR0A = 0xff - ADCH;
-//    OCR0A = 0x7f;
+    uint32_t f = ADCH * 18750;
+    uint32_t o = (9600000 / (2 * 1 * f)) - 1;
+    OCR0A = (uint8_t) o;
 }
 
 int main(void) {
@@ -44,15 +35,13 @@ int main(void) {
     set_sleep_mode(SLEEP_MODE_IDLE);
 
     /* Timer */
-    TCCR0A = _BV(COM0A1) | _BV(COM0A0) | _BV(WGM01) | _BV(WGM00);
+    TCCR0A = _BV(COM0A0) | _BV(WGM01);
     TCCR0B = _BV(CS00);
 
     /* ADC */
     ADMUX = _BV(ADLAR) | _BV(MUX0);
     ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIE) | _BV(ADATE);
     ADCSRA |= _BV(ADPS2) | _BV(ADPS1);
-
-    startFan();
 
     sei();
 
