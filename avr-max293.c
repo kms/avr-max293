@@ -12,10 +12,21 @@
 #include <util/delay.h>
 #include <stdio.h>
 
+volatile uint8_t f;
+
 ISR(SIG_ADC) {
-    uint32_t f = ADCH * 18750;
-    uint32_t o = (9600000 / (2 * 1 * f)) - 1;
-    OCR0A = (uint8_t) o;
+    if (PINB & _BV(PINB4)) {
+	f = 0xff;
+    } else {
+	uint16_t p;
+
+	p = ADCL;
+	p |= (ADCH << 8);
+
+	f = p >> 2;
+    }
+
+    OCR0A = f;
 }
 
 int main(void) {
@@ -24,8 +35,7 @@ int main(void) {
     wdt_disable();
 
     /* System clock */
-    //CLKPR = _BV(CLKPCE);
-    //CLKPR = _BV(CLKPS3);
+    clock_prescale_set(clock_div_1);
 
     /* Ports */
     PORTB = _BV(PINB2) | _BV(PINB3) | _BV(PINB4);
@@ -39,13 +49,25 @@ int main(void) {
     TCCR0B = _BV(CS00);
 
     /* ADC */
-    ADMUX = _BV(ADLAR) | _BV(MUX0);
+    ADMUX = _BV(MUX0) | _BV(MUX1);
     ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIE) | _BV(ADATE);
     ADCSRA |= _BV(ADPS2) | _BV(ADPS1);
 
-    sei();
-
     for (;;) {
-	sleep_mode();
+	uint8_t i;
+
+	sei();
+
+	PORTB &= ~(_BV(PINB1));
+	for (i = 0; i < 15; i++) {
+	    _delay_ms(10);
+	}
+	PORTB |= _BV(PINB1);
+
+	cli();
+
+	for (i = 0; i < f; i++) {
+	    _delay_ms(5);
+	}
     }
 }
