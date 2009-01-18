@@ -1,6 +1,8 @@
-/*
- * $Id$
- * Karl-Martin Skontorp <kms@skontorp.net>
+/* avr-max293
+ * Adjustable frequency generator for MAX293.
+ *
+ * (c) Karl-Martin Skontorp <kms@skontorp.net> ~ http://picofarad.org/
+ * Licensed under the GNU GPL 2.0 or later.
  */
 
 #define F_CPU 4.8E6
