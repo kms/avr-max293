@@ -18,14 +18,14 @@ volatile uint8_t f;
 
 ISR(SIG_ADC) {
     if (PINB & _BV(PINB4)) {
-	f = 0xff;
+        f = 0xff;
     } else {
-	uint16_t p;
+        uint16_t p;
 
-	p = ADCL;
-	p |= (ADCH << 8);
+        p = ADCL;
+        p |= (ADCH << 8);
 
-	f = p >> 2;
+        f = p >> 2;
     }
 
     OCR0A = f;
@@ -56,20 +56,20 @@ int main(void) {
     ADCSRA |= _BV(ADPS2) | _BV(ADPS1);
 
     for (;;) {
-	uint8_t i;
+        uint8_t i;
 
-	sei();
+        sei();
 
-	PORTB &= ~(_BV(PINB1));
-	for (i = 0; i < 15; i++) {
-	    _delay_ms(10);
-	}
-	PORTB |= _BV(PINB1);
+        PORTB &= ~(_BV(PINB1));
+        for (i = 0; i < 15; i++) {
+            _delay_ms(10);
+        }
+        PORTB |= _BV(PINB1);
 
-	cli();
+        cli();
 
-	for (i = 0; i < f; i++) {
-	    _delay_ms(5);
-	}
+        for (i = 0; i < f; i++) {
+            _delay_ms(5);
+        }
     }
 }
